@@ -40,7 +40,7 @@ export function getChildNodes(element) {
  * @param {Object} elementOptions
  * @returns {VNode}
  */
-export function templateElement(createElement, element, elementOptions) {
+export function templateElement(createElement,element,elementOptions) {
   const templateChildren = getChildNodes(element);
 
   const vueTemplateChildren = Array.from(templateChildren).map((child) => {
@@ -48,7 +48,7 @@ export function templateElement(createElement, element, elementOptions) {
     // https://vuejs.org/v2/guide/render-function#createElement-Arguments
     if (child.nodeName === '#text') return child.nodeValue;
 
-    return createElement(child.tagName, {
+    return createElement(child.tagName,{
       attrs: getAttributes(child),
       domProps: {
         innerHTML: child.innerHTML
@@ -58,7 +58,7 @@ export function templateElement(createElement, element, elementOptions) {
 
   elementOptions.slot = element.id;
 
-  return createElement('template', elementOptions, vueTemplateChildren);
+  return createElement('template',elementOptions,vueTemplateChildren);
 }
 
 /**
@@ -67,30 +67,42 @@ export function templateElement(createElement, element, elementOptions) {
  * @param createElement
  * @param Vue
  */
-export function getSlots(children = [], createElement) {
+export function getSlots(children = [],createElement,isReact = false) {
   const slots = [];
   Array.from(children).forEach((child) => {
     if (child.nodeName === '#text') {
       if (child.nodeValue.trim()) {
-        slots.push(createElement('span', child.nodeValue));
+        console.log("🚀 ~ file: getSlots.js:75 ~ Array.from ~ child:", child)
+        slots.push(isReact ? createElement('span', {}, 'aaa') :createElement('span',child.nodeValue));
       }
     } else if (child.nodeName !== '#comment') {
       const attributes = getAttributes(child);
-      const elementOptions = {
+      const elementOptions = isReact ? {
+        ...attributes,
+        dangerouslySetInnerHTML: {
+          __html: (child.innerHTML === '' ? child.innerText : child.innerHTML)
+        }
+      } : {
         attrs: attributes,
         domProps: {
           innerHTML: (child.innerHTML === '' ? child.innerText : child.innerHTML)
         }
       };
 
+      console.log(elementOptions)
+
       if (attributes.slot) {
-        elementOptions.slot = attributes.slot;
+        if (isReact) {
+          elementOptions.children = attributes.slot;
+        } else {
+          elementOptions.slot = attributes.slot;
+        }
         attributes.slot = undefined;
       }
 
       const slotVueElement = (child.tagName === 'TEMPLATE') ?
-        templateElement(createElement, child, elementOptions) :
-        createElement(child.tagName, {...elementOptions.attrs, ...elementOptions.domProps});
+        templateElement(createElement,child,elementOptions) :
+        isReact ? createElement(child.tagName, {...elementOptions}): createElement(child.tagName,{ ...elementOptions.attrs,...elementOptions.domProps });
 
       slots.push(slotVueElement);
     }

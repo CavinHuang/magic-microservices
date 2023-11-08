@@ -8,14 +8,15 @@
   <title>Vite + Vue + TS</title>
   <!-- <script type="module" src="./dist/index.esm.js"></script> -->
   <style>
-    .e-button--primary {
+    .e-button--primary, .r-button--primary {
       background-color: #409eff;
       color: #fff;
       height: 40px;
       border: 1px solid #409eff;
       border-radius: 8px;
     }
-    .e-button--error {
+
+    .e-button--error, .r-button--error {
       background-color: #f56c6c;
       color: #fff;
       height: 40px;
@@ -26,11 +27,14 @@
 </head>
 
 <body>
-
   <script type="module">
-    import { createApp,h,reactive,ref,watch, toRefs } from 'https://esm.sh/vue'
+    import { createApp,h,reactive,ref,watch,toRefs } from 'https://esm.sh/vue'
     import magic from './dist/index.esm.js'
     import { getSlots } from './getSlots.js'
+
+    // react
+    import React from 'https://esm.sh/react'
+    import ReactDOM from 'https://esm.sh/react-dom'
 
     // import { EButton } from './dist/material.js'
 
@@ -42,11 +46,11 @@
           default: 'default',
         },
       },
-      setup(props, { slots }) {
-        console.log(props, '======')
+      setup(props,{ slots }) {
+        console.log(props,'======')
         return () => h('button',{
           class: `e-button e-button--${props.type}`,
-        }, {
+        },{
           default: () => slots.default(),
           testSlot1: () => slots.testSlot1(),
         })
@@ -63,22 +67,22 @@
       },
       mount(container,props,element) {
         console.log('magic-microservices-component-vue mount >>> ',props,container,element)
-        const slots = getSlots(element.childNodes, h)
-        console.log('🚀 ~ file: index.html:46 ~ mount ~ slots:', slots)
-        console.log('🚀 ~ file: index.html:46 ~ mount ~ EButton:', EButton)
+        const slots = getSlots(element.childNodes,h)
+        console.log('🚀 ~ file: index.html:46 ~ mount ~ slots:',slots)
+        console.log('🚀 ~ file: index.html:46 ~ mount ~ EButton:',EButton)
         // vueInstance = createApp((_props) => h(EButton, props, slots)).mount(element)
-        console.log('🚀 ~ file: index.html:70 ~ mount ~ propsReactive:', propsReactive)
+        console.log('🚀 ~ file: index.html:70 ~ mount ~ propsReactive:',propsReactive)
         propsReactive = reactive(props)
         comp =
-        console.log('🚀 ~ file: index.html:72 ~ mount ~ comp:', comp)
+          console.log('🚀 ~ file: index.html:72 ~ mount ~ comp:',comp)
         vueInstance = createApp({
           render() {
             this.$data.key = this.id
-            return h(EButton, propsReactive, slots)
+            return h(EButton,propsReactive,slots)
           },
         }).mount(element)
 
-        console.log('🚀 ~ file: index.html:67 ~ mount ~ vueInstance:', vueInstance)
+        console.log('🚀 ~ file: index.html:67 ~ mount ~ vueInstance:',vueInstance)
       },
       updated(attrName,value) {
         console.log('magic-microservices-component-vue update',attrName,' >>> ',value)
@@ -93,20 +97,50 @@
     })
 
 
-    // window.handleSetError = handleSetError
+    // react demo
+    const RButton = (props) => {
+      const { type } = props
+      console.log(props.children)
+      return React.createElement('button',{
+        className: `r-button r-button--${type}`,
+      },props.children)
+    }
+
+    const dataList = [{ name: 'hello' }, { name: 'world' }, { name: 'react' }, { name: 'react-dom' }];
+
+    magic('r-button',{
+      bootstrap() {
+        console.log('bootstrap')
+      },
+      mount(container,props, element) {
+        console.log('magic-microservices-component mount >>> ',props);
+        const slots = getSlots(element.childNodes,React.createElement, true)
+        console.log("🚀 ~ file: index.html:117 ~ mount ~ slots:", slots)
+        const text = document.createTextNode('a')
+        text.textContent = 'react text'
+        ReactDOM.render(React.createElement(RButton,{ ...props,dataList}),element);
+      },
+      updated(attrName,value,container,props, element) {
+        console.log('magic-microservices-component update >>> ',props);
+        ReactDOM.render(React.createElement(RButton,{ ...props,dataList },null),element);
+      },
+    },{
+      propTypes: {
+        type: String,
+      },
+    })
   </script>
   <div id="app">
-    <e-button type="primary">
-      e button
-      <span vue-slot="testSlot1" slot>test vue slot 1</span>
+    <e-button type="primary"> e button <span vue-slot="testSlot1" slot>test vue slot 1</span>
     </e-button>
+    <r-button type="primary">r-button</r-button>
   </div>
   <button onclick="handleSetError()">error</button>
   <script>
     function handleSetError() {
       const el = document.querySelector('e-button')
       console.log(el)
-      el.setAttribute('type', 'error')
+      el.setAttribute('type','error')
     }
   </script>
 </body>
