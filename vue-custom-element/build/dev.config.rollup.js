@@ -6,7 +6,7 @@ const replace = require('rollup-plugin-replace')
 module.exports = {
   entry: 'src/vue-custom-element.js',
   dest: 'dist/vue-custom-element.js',
-  format: 'umd',
+  format: ['umd'],
   moduleName: 'VueCustomElement',
   plugins: [replace({
     'process.env.NODE_ENV': '"development"'
